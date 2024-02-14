@@ -15,7 +15,7 @@ public class TRS extends VarsCAP {
     //                 ✝ AMEN ✝
     public TRS ENCODING(){
         for (Rule rule : this.getRules()) {
-            rule.left = null;
+
         }
         return null;
     }
