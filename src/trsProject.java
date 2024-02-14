@@ -166,7 +166,13 @@ public class trsProject {
             }
             System.out.println(lambda.write());
         }
-
+        System.out.println("----------- ENCODED TRS -----------");
+        for (Rule lambda : example_10.ENCODING().getRules()) {
+            if(lambda == null){
+                continue;
+            }
+            System.out.println(lambda.write());
+        }
 
         /*
         //TERM TESTS

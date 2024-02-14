@@ -14,6 +14,20 @@ public class Location {
         return "(" + alpha.write() + ", " + (left ? "L" : "R") + ", " + position + ")" ;
     }
 
+    public int getSizeFromSet(Nest[] source){
+        for (Nest nest :
+                source) {
+            if(nest == null){
+                continue;
+            }
+            if(this.getAlpha().equals(nest.getLoc().getAlpha()) &&
+                    this.getPosition().equals(nest.getLoc().getPosition()) &&
+                    this.left == nest.getLoc().left){
+                return nest.getSize();
+            }
+        }
+        return 1;
+    }
 
     //GETTERS AND SETTERS
     public Rule getAlpha() {

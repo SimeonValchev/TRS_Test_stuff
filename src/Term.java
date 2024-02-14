@@ -3,6 +3,7 @@ import java.util.Collections;
 
 public class Term {
 
+    boolean encoded;
     char symbol;
     int arrity;
     Term[] subterms = new Term[arrity];
@@ -13,7 +14,18 @@ public class Term {
         this.subterms = new Term[arrity];
 
         for (int i = 0; i < arrity; i++) {
-            this.subterms[i] = new Term(subterms[i].getSymbol(),subterms[i].getArrity(),subterms[i].getSubterms());
+            this.subterms[i] = new Term(subterms[i].encoded, subterms[i].getSymbol(),subterms[i].getArrity(),subterms[i].getSubterms());
+        }
+    }
+
+    public Term(boolean encoded, char symbol, int arrity, Term[] subterms) {
+        this.encoded = encoded;
+        this.symbol = symbol;
+        this.arrity = arrity;
+        this.subterms = new Term[arrity];
+
+        for (int i = 0; i < arrity; i++) {
+            this.subterms[i] = new Term(subterms[i].encoded, subterms[i].getSymbol(),subterms[i].getArrity(),subterms[i].getSubterms());
         }
     }
 
@@ -21,11 +33,111 @@ public class Term {
         this.symbol = symbol;
     }
 
+    public Term phi(Term input, Location loc, boolean nestedTag, Location[] ENC, Nest[] NST){
+        String temp_position = "";
+        int m = loc.getSizeFromSet(NST);
+
+        if(!inLocSet(loc, ENC)){
+
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
+            }
+
+        }else if(loc.left){
+
+            input.setEncoded(true);
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
+            }
+
+        }else if(nestedTag){
+
+            input.setEncoded(true);
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
+            }
+
+        }else if(m > 1){
+
+            input.setEncoded(true);
+            //ADD m - MANY i-s
+            Term result = new Term('i',1,new Term[]{input});
+            for (int i = 0; i < m - 1; i++) {
+                result =  new Term('i',1,new Term[]{result});
+            }
+
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), true, ENC, NST);
+            }
+            return result;
+
+        }else{
+
+            input.setEncoded(true);
+            Term el_input = new Term(true, input.getSymbol(), input.getArrity(), input.getSubterms());
+            Term result = new Term('i',1,new Term[]{el_input});
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
+            }
+            return result;
+
+        }
+
+        return input;
+    }
+
+    public boolean inLocSet(Location loc, Location[] locations){
+        for (Location lambda : locations) {
+            if(lambda == null){
+                continue;
+            }
+            if(loc.alpha.equals(lambda.alpha) &&
+                    loc.left == lambda.left &&
+                    loc.position.equals(lambda.position)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String write(){
         String res = "";
         int counter = getArrity() - 1;
 
         if(getArrity() != 0){
+            if(encoded){
+                res += "l_";
+            }
 
             res += getSymbol() + "(";
             for (Term t : getSubterms()) {
@@ -37,6 +149,9 @@ public class Term {
             }
 
         }else{
+            if(encoded && !Character.isUpperCase(getSymbol())){
+                res += "l_";
+            }
             res += getSymbol();
             return res;
         }
@@ -172,5 +287,7 @@ public class Term {
         this.subterms[index - 1] = subterm;
     }
 
-
+    public void setEncoded(boolean encoded) {
+        this.encoded = encoded;
+    }
 }

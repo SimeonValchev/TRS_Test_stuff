@@ -15,28 +15,88 @@ public class TRS extends VarsCAP {
     //                 ✝ AMEN ✝
     public TRS ENCODING(){
         for (Rule rule : this.getRules()) {
-            rule.left = null;
+            rule.left = phi(rule.left, new Location(rule, true, "eps"), false, ENC_R(), NST_R());
+            rule.right = phi(rule.right, new Location(rule, false, "eps"), false, ENC_R(), NST_R());
         }
-        return null;
+        return this;
     }
 
     public Term phi(Term input, Location loc, boolean nestedTag, Location[] ENC, Nest[] NST){
-        String temp_position = loc.position;
+        String temp_position = "";
+        int m = loc.getSizeFromSet(NST);
 
         if(!inLocSet(loc, ENC)){
 
             for (int i = 1; i < input.arrity + 1; i++) {
-                temp_position = loc.position + "." + String.valueOf(i);
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
                 input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
             }
 
         }else if(loc.left){
 
-
+            input.setEncoded(true);
             for (int i = 1; i < input.arrity + 1; i++) {
-                temp_position = loc.position + "." + String.valueOf(i);
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
                 input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
             }
+
+        }else if(nestedTag){
+
+            input.setEncoded(true);
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
+            }
+
+        }else if(m > 1){
+
+            input.setEncoded(true);
+
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), true, ENC, NST);
+            }
+            //ADD m - MANY i-s
+            Term result = new Term('i',1,new Term[]{input});
+            for (int i = 0; i < m - 1; i++) {
+                result =  new Term('i',1,new Term[]{result});
+            }
+            return result;
+
+        }else{
+
+            input.setEncoded(true);
+            for (int i = 1; i < input.arrity + 1; i++) {
+
+                if(loc.position.equals("eps")){
+                    temp_position = String.valueOf(i);
+                }else{
+                    temp_position = loc.position + "." + i;
+                }
+                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), true, ENC, NST);
+            }
+            return new Term('i',1,new Term[]{input});
+
         }
 
         return input;
