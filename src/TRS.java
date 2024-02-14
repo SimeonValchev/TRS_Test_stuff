@@ -18,6 +18,7 @@ public class TRS extends VarsCAP {
             rule.left = phi(rule.left, new Location(rule, true, "eps"), false, ENC_R(), NST_R());
             rule.right = phi(rule.right, new Location(rule, false, "eps"), false, ENC_R(), NST_R());
         }
+
         return this;
     }
 
