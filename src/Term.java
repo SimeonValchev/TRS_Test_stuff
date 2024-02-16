@@ -160,10 +160,79 @@ public class Term {
         return res;
     }
 
+    public Term stringToTerm(String input){
+        Term[] array = new Term[input.length()];
+        int array_counter = 0;
+        char symbol = input.charAt(0);
+
+        if(input.length() == 1){
+            return new Term(symbol);
+        }
+
+        int braket_counter = 0;
+        int arrity = 1;
+
+        //ARRITY CALCULATOR
+        for (int i = 2; i < input.length(); i++) {
+            if(input.charAt(i) == '('){
+                braket_counter++;
+            } else if (input.charAt(i) == ')') {
+                braket_counter--;
+            } else if (input.charAt(i) == ',' && braket_counter == 1) {
+                arrity++;
+            }
+        }
+
+        if(arrity == 1){
+            return new Term(symbol, 1, new Term[]{stringToTerm(input.substring(2,input.length() - 1))});
+        }
+
+        braket_counter = 0;
+
+        boolean key = true;
+        int tempIndex = 0;
+        for (int i = 1; i < input.length(); i++) {
+            if(input.charAt(i) == '('){
+                if(key){
+                    tempIndex = i+1;
+                    key = false;
+                }
+                braket_counter++;
+
+            } else if(input.charAt(i) == ')'){
+                if(i == input.length() - 1){
+                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
+                    array_counter++;
+                }
+                braket_counter--;
+
+            } else if(input.charAt(i) == ','){
+                if(key){
+                    tempIndex = i+1;
+                    key = false;
+                }else if(braket_counter == 1){
+                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
+                    array_counter++;
+                    tempIndex = i + 1;
+                }
+            }
+        }
+        Term[] result = new Term[arrity];
+
+        for (int i = 0; i < arrity; i++) {
+            result[i] = array[i];
+        }
+        return new Term(symbol, arrity, result);
+
+    }
+
     public int nestSize(char[] sigma_d, char[] vars){
-        if (inCharSet(symbol, vars)) {
+        if (!inCharSet(symbol, sigma_d) && arrity == 0) {
             return 0;
         }else if(inCharSet(symbol,sigma_d)){
+            if(arrity == 0){
+                return 1;
+            }
             Integer[] temp = new Integer[arrity];
             for (int i = 0; i < arrity; i++) {
                 temp[i] = subterms[i].nestSize(sigma_d,vars);

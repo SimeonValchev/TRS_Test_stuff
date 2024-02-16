@@ -14,9 +14,12 @@ public class Location {
         return "(" + alpha.write() + ", " + (left ? "L" : "R") + ", " + position + ")" ;
     }
 
+    public char symbolAtLoc(){
+        return this.left ? this.getAlpha().left.subTermAt(this.getPosition()).getSymbol() : this.getAlpha().right.subTermAt(this.getPosition()).getSymbol();
+    }
+
     public int getSizeFromSet(Nest[] source){
-        for (Nest nest :
-                source) {
+        for (Nest nest : source) {
             if(nest == null){
                 continue;
             }

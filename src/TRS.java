@@ -15,10 +15,12 @@ public class TRS extends VarsCAP {
     //                 ✝ AMEN ✝
     public TRS ENCODING(){
         for (Rule rule : this.getRules()) {
+            if(rule == null){
+                continue;
+            }
             rule.left = phi(rule.left, new Location(rule, true, "eps"), false, ENC_R(), NST_R());
             rule.right = phi(rule.right, new Location(rule, false, "eps"), false, ENC_R(), NST_R());
         }
-
         return this;
     }
 
@@ -139,6 +141,9 @@ public class TRS extends VarsCAP {
                 continue;
             }
             for (Location loc : INF_R()) {
+                if(loc == null){
+                    continue;
+                }
                 if(source[i].getLoc().getAlpha().equals(loc.getAlpha()) && source[i].getLoc().left == loc.left &&
                         source[i].getLoc().position.equals(loc.position)){
                     source[i] = null;
@@ -202,6 +207,15 @@ public class TRS extends VarsCAP {
             if(loc == null){
                 continue;
             }
+
+            Term temp = loc.left ? loc.getAlpha().left : loc.getAlpha().right;
+
+            if(inCharSet(temp.subTermAt(loc.position).getSymbol(), sigmaD()) && nonNullElements(intersection(theY(new Location[]{loc}), subLocations(loc))) >= 2){
+                result[counter] = loc;
+                counter++;
+            }
+
+            /*
             if(loc.left && inCharSet(loc.getAlpha().left.subTermAt(loc.position).getSymbol(), sigmaD())){
                 if(nonNullElements(intersection(theY(new Location[]{loc}), subLocations(loc))) >= 2){
                     result[counter] = loc;
@@ -213,6 +227,7 @@ public class TRS extends VarsCAP {
                     counter++;
                 }
             }
+             */
         }
         return result;
     }
@@ -279,6 +294,9 @@ public class TRS extends VarsCAP {
                     //R2L
                     String pi = "eps";
                     for (Rule rule : rules) {
+                        if(rule == null){
+                            continue;
+                        }
                         if(!loc.position.equals("eps") && MGU(CAP(loc.getAlpha().right.subTermAt(pi)), rule.getLeft())){
                             for (String omega :
                                     rule.getLeft().positions(true)) {
@@ -309,6 +327,9 @@ public class TRS extends VarsCAP {
                         pi = loc.position.substring(0,i+1);
                         //COPIED PART
                         for (Rule rule : rules) {
+                            if(rule == null){
+                                continue;
+                            }
                             if(MGU(CAP(loc.getAlpha().right.subTermAt(pi)), rule.getLeft())){
                                 for (String omega :
                                         rule.getLeft().positions(true)) {
@@ -333,6 +354,9 @@ public class TRS extends VarsCAP {
 
                     //R2R
                     for (Rule rule : rules) {
+                        if(rule == null){
+                            continue;
+                        }
                         for (String upsilon : rule.right.positions(true)) {
                             if(inCharSet(rule.right.subTermAt(upsilon).getSymbol(), sigmaD()) &&
                                     MGU(CAP(rule.right.subTermAt(upsilon)), loc.getAlpha().left) &&
@@ -385,6 +409,9 @@ public class TRS extends VarsCAP {
                 if (loc.left && !loc.position.equals("eps")) {
                     //R2L
                     for (Rule rule : rules) {
+                        if(rule == null){
+                            continue;
+                        }
                         String pi = "eps";
                         if (MGU(CAP(rule.right.subTermAt(pi)), loc.getAlpha().getLeft())) {
                             for (String tau :
@@ -410,7 +437,8 @@ public class TRS extends VarsCAP {
                                 pi = tau.substring(0,i+1);
                                 if(MGU(CAP(rule.right.subTermAt(pi)), loc.getAlpha().left) &&
                                         n_PAR(tau.substring(i+2),loc.position) &&
-                                        inLocSet(new Location( rule, false, pi), result)){
+                                        // changed pi -> tau in next line
+                                        inLocSet(new Location( rule, false, tau), result)){
                                     result[counter_res] = loc;
                                     counter_res++;
                                     location_added = true;
@@ -599,6 +627,9 @@ public class TRS extends VarsCAP {
     public int loc_R_num(){
         int loc_num = 0;
         for (Rule rule : rules) {
+            if(rule == null){
+                continue;
+            }
             loc_num += rule.getLeft().posNumber(true) + rule.getRight().posNumber(true);
         }
         return loc_num;
@@ -612,6 +643,9 @@ public class TRS extends VarsCAP {
         int counter = 0;
 
         for (Rule rule : rules) {
+            if(rule == null){
+                continue;
+            }
             for (String pos: rule.getLeft().positions(true)){
                 res[counter] = new Location(rule, true, pos);
                 counter++;
@@ -623,6 +657,25 @@ public class TRS extends VarsCAP {
         }
 
         return res;
+    }
+
+    //WRITER
+    public void write(){
+        for (Rule r :
+                rules) {
+            if(r == null){
+                continue;
+            }
+            System.out.println(r.write());
+        }
+        System.out.print("VARS: ");
+        for (char ch :
+                vars) {
+            if(ch == 0){
+                continue;
+            }
+            System.out.print(ch + ", ");
+        }
     }
 
     //ELEMENT IN SET CHECKERS
@@ -656,6 +709,9 @@ public class TRS extends VarsCAP {
     public char[] sigmaD(){
         char[] res = new char[rules.length];
         for (int i = 0; i < rules.length; i++) {
+            if(rules[i] == null){
+                continue;
+            }
             res[i] = rules[i].getLeft().getSymbol();
         }
         return res;

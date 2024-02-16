@@ -1,214 +1,195 @@
-import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Scanner;
 
 public class trsProject {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        //EXAMPLE 8
-        /*
-        //g
-        Term g = new Term('g');
-        //a
-        Term a = new Term('a');
-        //f(a)
-        Term f_a = new Term('f',1,new Term[]{a});
-        //b
-        Term b = new Term('b');
+        BufferedReader reader;
+        Rule[] rules = new Rule[20];
+        int counter_r = 0;
+        char[] vars = new char[10];
+        int counter_ch = 0;
 
-        //RULES
-        Rule alpha1 = new Rule(g,f_a);
-        Rule alpha2 = new Rule(a,b);
-        Rule alpha3 = new Rule(f_a,f_a);
+        boolean key = false;
+        boolean key_2 = false;
 
-        //TRS EX_8
-        TRS example_8 = new TRS(new Rule[]{alpha1,alpha2,alpha3}, null);
-        */
+        Scanner scanner = new Scanner(System.in);
+        String example = "";
 
-        //EXAMPLE 7
-        /*
-        //VARS
-        Term x = new Term('X');
-        Term y = new Term('Y');
+        System.out.println("Type a or b for:\na: Source file path OR\nb: Choose an example 6-10");
+        String temp_scanner = scanner.nextLine();
+        if(temp_scanner.equals("a")){
 
-        //h(x)
-        Term h_x = new Term('h',1, new Term[]{x});
-        //s(y)
-        Term s_y = new Term('s',1, new Term[]{y});
-        Term s_x = new Term('s',1, new Term[]{x});
-        //f(x,s(y))
-        Term f_x_sy = new Term('f',2, new Term[]{x,s_y});
-        Term f_x_y = new Term('f',2, new Term[]{x,y});
-        //g_x
-        Term g_x = new Term('g',1,new Term[]{x});
-        //g(s(x))
-        Term g_sx = new Term('g',1, new Term[]{s_x});
-        //f(g(x),x)
-        Term f_gx_x = new Term('f',2, new Term[]{g_x,x});
-        //c(x, f(x,y))
-        Term c_x_fxy = new Term('c',2, new Term[]{x,f_x_y});
-
-
-        //RULES
-        Rule alpha1 = new Rule(h_x,f_gx_x);
-        Rule alpha2 = new Rule(f_x_sy,c_x_fxy);
-        Rule alpha3 = new Rule(g_sx,g_x);
-
-        //TRS EX_7
-        TRS example_7 = new TRS(new Rule[]{alpha1,alpha2,alpha3}, new char[]{'X','Y'});
-        */
-
-        //EXAMPLE 9
-        /*
-        //VARS
-        Term x = new Term('X');
-        Term y = new Term('Y');
-
-        //h(x)
-        Term h_x = new Term('h',1, new Term[]{x});
-        //s(y)
-        Term s_y = new Term('s',1, new Term[]{y});
-        Term s_x = new Term('s',1, new Term[]{x});
-        //f(x,s(y))
-        Term f_x_sy = new Term('f',2, new Term[]{x,s_y});
-        Term f_x_y = new Term('f',2, new Term[]{x,y});
-        //g_x
-        Term g_x = new Term('g',1,new Term[]{x});
-        //g(s(x))
-        Term g_sx = new Term('g',1, new Term[]{s_x});
-        //f(g(x),x)
-        Term f_gx_x = new Term('f',2, new Term[]{g_x,x});
-        //f( f(g(x),x), x)
-        Term f_f_gx_x_x = new Term('f',2, new Term[]{f_gx_x,x});
-        //c(x, f(x,y))
-        Term c_x_fxy = new Term('c',2, new Term[]{x,f_x_y});
-
-
-        //RULES
-        Rule alpha1 = new Rule(h_x,f_f_gx_x_x);
-        Rule alpha2 = new Rule(f_x_sy,c_x_fxy);
-        Rule alpha3 = new Rule(g_sx,g_x);
-
-        //TRS EX_9
-        TRS example_9 = new TRS(new Rule[]{alpha1,alpha2,alpha3}, new char[]{'X','Y'});
-
-         */
-
-        //EXAMPLE 10
-        //*
-        //VARS
-        Term x = new Term('X');
-        Term y = new Term('Y');
-        Term z = new Term('Z');
-
-        Term zero = new Term('0');
-
-        //h(x)
-        Term h_x = new Term('h',1, new Term[]{x});
-        //s(x)
-        Term s_x = new Term('s',1, new Term[]{x});
-        Term s_z = new Term('s',1, new Term[]{z});
-        //f(x, 0, x)
-        Term f_x_0_x = new Term('f',3, new Term[]{x, zero, x});
-        //f(x, y, s(z))
-        Term f_x_y_sz = new Term('f',3, new Term[]{x,y,s_z});
-        //g_x_y
-        Term g_x_y = new Term('g',2,new Term[]{x, y});
-        //dbl(x)
-        Term dbl_x = new Term('w',1, new Term[]{x});
-        //dbl( g(x,y))
-        Term dbl_g_xy = new Term('w',1, new Term[]{g_x_y});
-        //d(x,x)
-        Term d_x_x = new Term('d',2, new Term[]{x,x});
-        //lin(x)
-        Term lin_x = new Term('l',1, new Term[]{x});
-        //lin(s(x))
-        Term lin_s_x = new Term('l',1, new Term[]{s_x});
-        //f(x, dbl( g(x,y)), z)
-        Term f_x_dbl_g_xy_z = new Term('f',3,new Term[]{x, dbl_g_xy, z});
-
-        //RULES
-        Rule alpha1 = new Rule(h_x,f_x_0_x);
-        Rule alpha2 = new Rule(f_x_y_sz, f_x_dbl_g_xy_z);
-        Rule alpha3 = new Rule(dbl_x,d_x_x);
-        Rule alpha4 = new Rule(g_x_y,lin_x);
-        Rule alpha5 = new Rule(lin_s_x,lin_x);
-
-        //TRS EX_10
-        TRS example_10 = new TRS(new Rule[]{alpha1,alpha2,alpha3,alpha4,alpha5}, new char[]{'X','Y','Z'});
-        //*/
-
-        //EXECUTABLE
-        System.out.println("------ ENC -----");
-        for (Location lambda : example_10.ENC_R()) {
-            if(lambda == null){
-                continue;
+        }else {
+            System.out.println("Which one?");
+            temp_scanner = scanner.nextLine();
+            switch (Integer.parseInt(temp_scanner)) {
+                case 6 -> {
+                    example = "h(X) -> f(w(g(a(X))),X)\nf(X,s(Y)) -> c(X,f(X,Y))\na(X) -> b(X)\ng(a(X)) -> q(X)\ng(b(X)) -> n(X)\nw(X) -> d\nq(s(X)) -> e(n(X),q(X))\nn(s(X)) -> n(X)\nvars\nX\nY";
+                    key_2 = true;
+                }
+                case 7 -> {
+                    example = "h(X) -> f(g(X),X)\nf(X,s(Y)) -> c(X,f(X,Y))\ng(s(X)) -> g(X)\nvars\nX\nY";
+                    key_2 = true;
+                }
+                case 8 -> {
+                    example = "g -> f(a)\na -> b\nf(a) -> f(a)";
+                    key_2 = true;
+                }
+                case 9 -> {
+                    example = "h(X) -> f(f(g(X),X),X)\nf(X,s(Y)) -> c(X,f(X,Y))\ng(s(X)) -> g(X)\nvars\nX\nY";
+                    key_2 = true;
+                }
+                case 10 -> {
+                    example = "h(X) -> f(X,0,X)\nf(X,Y,s(Z)) -> f(X,w(g(X,Y)),Z)\nw(X) -> d(X,X)\ng(X,Y) -> n(X)\nn(s(X)) -> n(X)\nvars\nX\nY\nZ";
+                    key_2 = true;
+                }
+                default -> {
+                    System.out.println("Example not found RIP");
+                    example = "";
+                    key_2 =true;
+                }
             }
-            System.out.println(lambda.write());
-        }
-        System.out.println("------ ALEPH -----");
-        for (Nest lambda : example_10.theALEPH()) {
-            if(lambda == null){
-                continue;
-            }
-            System.out.println(lambda.write());
-        }
-        System.out.println("------ NST -----");
-        for (Nest lambda : example_10.NST_R()) {
-            if(lambda == null){
-                continue;
-            }
-            System.out.println(lambda.write());
-        }
-        System.out.println("------ INF -----");
-        for (Location lambda : example_10.INF_R()) {
-            if(lambda == null){
-                continue;
-            }
-            System.out.println(lambda.write());
-        }
-        System.out.println("----------- ENCODED TRS -----------");
-        for (Rule lambda : example_10.ENCODING().getRules()) {
-            if(lambda == null){
-                continue;
-            }
-            System.out.println(lambda.write());
         }
 
-        /*
-        //TERM TESTS
-        System.out.println(t3.write());
-        System.out.println(t4.write());
-        System.out.println(t4.posNumber(true));
-        System.out.println(Arrays.toString(t4.positions(true)));
+        try {
 
-        t4.replaceAtWith("1",t3);
-        System.out.println(t4.write());
-        System.out.println(Arrays.toString(t4.positions(true)));
+            reader = key_2 ? new BufferedReader(new StringReader(example))
+                    //SOURCE PATH OF FILE GOES HERE------------v
+                    : new BufferedReader(new FileReader("source path"));
 
-        t4.replaceAtWith("1.1",t3);
-        System.out.println(t4.write());
-        System.out.println(Arrays.toString(t4.positions(true)));
+            String line = reader.readLine();
 
-        System.out.println(t4.subTermAt("1.1.2").write());
-        */
+            while (line != null) {
 
-        /*
-        TRS trs1 = new TRS(new Rule[]{r1}, new char[]{'X', 'Y'});
-        System.out.println(t3.write() + " : " + t33.write());
-        System.out.println(trs1.MGU(t3,t33));
+                if(line.equals("vars")){
+                    key = true;
+                    line = reader.readLine();
+                    continue;
+                }
 
-        System.out.println(trs1.CAP(t333).write());
-        */
+                if(!key) {
+                    rules[counter_r] = new Rule(stringToTerm(line.substring(0, line.indexOf('-') - 1)), stringToTerm(line.substring(line.indexOf('>') + 2)));
+                    counter_r++;
+                }else{
+                    vars[counter_ch] = line.charAt(0);
+                    counter_ch++;
+                }
+
+                line = reader.readLine();
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("--- INTERPRETED INPUT ---");
+        TRS trs_R = new TRS(rules, vars);
+        trs_R.write();
+        System.out.println("");
+        System.out.println("");
+
+        Location[] infinity = trs_R.INF_R();
+        System.out.println("--- NON-TERMINATING RULES FOR SYMBOLS ---");
+        for (Location loc : infinity) {
+            if(loc == null){
+                continue;
+            }
+            System.out.println(loc.symbolAtLoc() + "  in rule " + loc.getAlpha().write() + "  on the " + (loc.left ? "LHS at position " : "RHS at position ") + loc.getPosition());
+        }
+
+        System.out.println("");
+        System.out.println("--- ENCODING ---");
+        TRS trs_R1 = trs_R.ENCODING();
+        trs_R1.write();
+        System.out.println("");
+
 
     }
 
-    public static boolean piLEQtau(String pi, String tau){
-        return pi.length() <= tau.length() && pi.equals(tau.substring(0,pi.length()));
+    public static Term stringToTerm(String input){
+        Term[] array = new Term[input.length()];
+        int array_counter = 0;
+        char symbol = input.charAt(0);
+
+        if(input.length() == 1){
+            return new Term(symbol);
+        }
+
+        int braket_counter = 0;
+        int arrity = 1;
+
+        //ARRITY CALCULATOR
+        for (int i = 1; i < input.length(); i++) {
+            if(input.charAt(i) == '('){
+                braket_counter++;
+            } else if (input.charAt(i) == ')') {
+                braket_counter--;
+            } else if (input.charAt(i) == ',' && braket_counter == 1) {
+                arrity++;
+            }
+        }
+
+        if(arrity == 1){
+            return new Term(symbol, 1, new Term[]{stringToTerm(input.substring(2,input.length() - 1))});
+        }
+
+        braket_counter = 0;
+
+        boolean key = true;
+        int tempIndex = 0;
+        for (int i = 1; i < input.length(); i++) {
+            if(input.charAt(i) == '('){
+                if(key){
+                    tempIndex = i+1;
+                    key = false;
+                }
+                braket_counter++;
+
+            } else if(input.charAt(i) == ')'){
+                if(i == input.length() - 1){
+                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
+                    array_counter++;
+                }
+                braket_counter--;
+
+            } else if(input.charAt(i) == ','){
+                if(key){
+                    tempIndex = i+1;
+                    key = false;
+                }else if(braket_counter == 1){
+                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
+                    array_counter++;
+                    tempIndex = i + 1;
+                }
+            }
+        }
+        Term[] result = new Term[arrity];
+
+        for (int i = 0; i < arrity; i++) {
+            result[i] = array[i];
+        }
+        return new Term(symbol, arrity, result);
+
     }
 
-    public static boolean lambaLEQkappa(Location lambda, Location kappa){
-        return lambda.alpha.left.equals(kappa.alpha.left) && lambda.left == kappa.left && piLEQtau(lambda.position, kappa.position);
+    public static boolean isNotCorrect(String term){
+        int temp = 0;
+        for (int i = 0; i < term.length(); i++) {
+            if(term.charAt(i) == '('){
+                temp++;
+            }else if(term.charAt(i) == ')'){
+                temp--;
+            }
+        }
+        return temp != 0;
     }
+
 }
 
 
