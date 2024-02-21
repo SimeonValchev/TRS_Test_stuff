@@ -1,4 +1,5 @@
-a -> b
+f(X,Y) -> g(X,h(Y),Y)
+g(X,h(Y),Z) -> h(X,Y,Z)
+h(h(X)) -> X
 vars
 X
-Y

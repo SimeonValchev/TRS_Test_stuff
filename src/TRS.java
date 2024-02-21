@@ -14,12 +14,14 @@ public class TRS extends VarsCAP {
     //MAY IT HAVE THE POWER TO CARRY ITS WRITER TO THE FINISH LINE
     //                 ✝ AMEN ✝
     public TRS ENCODING(){
+        Location[] ENC = ENC_R();
+        Nest[] NST = NST_R();
         for (Rule rule : this.getRules()) {
             if(rule == null){
                 continue;
             }
-            rule.left = phi(rule.left, new Location(rule, true, "eps"), false, ENC_R(), NST_R());
-            rule.right = phi(rule.right, new Location(rule, false, "eps"), false, ENC_R(), NST_R());
+            rule.left = phi(rule.left, new Location(rule, true, "eps"), false, ENC, NST);
+            rule.right = phi(rule.right, new Location(rule, false, "eps"), false, ENC, NST);
         }
         return this;
     }
