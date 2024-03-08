@@ -36,7 +36,7 @@ public class Location {
     }
 
     public int nextBiggestNest(Nest[] nests){
-        //ASSUMPTION: LOC IS ALWAYS ON THE RHS
+        //ASSUMED THIS METHOD WILL ONLY BE CALLED ON RHS LOCATIONS
         int result = this.getSizeFromSet(nests);
         Term right = this.getAlpha().right.subTermAt(getPosition());
         Integer[] temp = new Integer[right.arrity];

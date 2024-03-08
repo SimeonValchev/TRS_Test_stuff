@@ -33,103 +33,6 @@ public class Term{
         this.symbol = symbol;
     }
 
-    public Term phi(Term input, Location loc, boolean nestedTag, Location[] ENC, Nest[] NST){
-        String temp_position = "";
-        int m = loc.getSizeFromSet(NST);
-
-        if(!inLocSet(loc, ENC)){
-
-            for (int i = 1; i < input.arrity + 1; i++) {
-
-                if(loc.position.equals("eps")){
-                    temp_position = String.valueOf(i);
-                }else{
-                    temp_position = loc.position + "." + i;
-                }
-                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
-            }
-
-        }else if(loc.left){
-
-            input.setEncoded(true);
-            for (int i = 1; i < input.arrity + 1; i++) {
-
-                if(loc.position.equals("eps")){
-                    temp_position = String.valueOf(i);
-                }else{
-                    temp_position = loc.position + "." + i;
-                }
-                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
-            }
-
-        }else if(nestedTag){
-
-            input.setEncoded(true);
-            for (int i = 1; i < input.arrity + 1; i++) {
-
-                if(loc.position.equals("eps")){
-                    temp_position = String.valueOf(i);
-                }else{
-                    temp_position = loc.position + "." + i;
-                }
-                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
-            }
-
-        }else if(m > 1){
-
-            input.setEncoded(true);
-            //ADD m - MANY i-s
-            Term result = new Term('i',1,new Term[]{input});
-            for (int i = 0; i < m - 1; i++) {
-                result =  new Term('i',1,new Term[]{result});
-            }
-
-            for (int i = 1; i < input.arrity + 1; i++) {
-
-                if(loc.position.equals("eps")){
-                    temp_position = String.valueOf(i);
-                }else{
-                    temp_position = loc.position + "." + i;
-                }
-                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), true, ENC, NST);
-            }
-            return result;
-
-        }else{
-
-            input.setEncoded(true);
-            Term el_input = new Term(true, input.getSymbol(), input.getArrity(), input.getSubterms());
-            Term result = new Term('i',1,new Term[]{el_input});
-            for (int i = 1; i < input.arrity + 1; i++) {
-
-                if(loc.position.equals("eps")){
-                    temp_position = String.valueOf(i);
-                }else{
-                    temp_position = loc.position + "." + i;
-                }
-                input.subterms[i-1] = phi(input.subterms[i-1], new Location(loc.getAlpha(), loc.left, temp_position), nestedTag, ENC, NST);
-            }
-            return result;
-
-        }
-
-        return input;
-    }
-
-    public boolean inLocSet(Location loc, Location[] locations){
-        for (Location lambda : locations) {
-            if(lambda == null){
-                continue;
-            }
-            if(loc.alpha.equals(lambda.alpha) &&
-                    loc.left == lambda.left &&
-                    loc.position.equals(lambda.position)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public String write(){
         String res = "";
         int counter = getArrity() - 1;
@@ -158,72 +61,6 @@ public class Term{
 
         res += ")";
         return res;
-    }
-
-    public Term stringToTerm(String input){
-        Term[] array = new Term[input.length()];
-        int array_counter = 0;
-        char symbol = input.charAt(0);
-
-        if(input.length() == 1){
-            return new Term(symbol);
-        }
-
-        int braket_counter = 0;
-        int arrity = 1;
-
-        //ARRITY CALCULATOR
-        for (int i = 2; i < input.length(); i++) {
-            if(input.charAt(i) == '('){
-                braket_counter++;
-            } else if (input.charAt(i) == ')') {
-                braket_counter--;
-            } else if (input.charAt(i) == ',' && braket_counter == 1) {
-                arrity++;
-            }
-        }
-
-        if(arrity == 1){
-            return new Term(symbol, 1, new Term[]{stringToTerm(input.substring(2,input.length() - 1))});
-        }
-
-        braket_counter = 0;
-
-        boolean key = true;
-        int tempIndex = 0;
-        for (int i = 1; i < input.length(); i++) {
-            if(input.charAt(i) == '('){
-                if(key){
-                    tempIndex = i+1;
-                    key = false;
-                }
-                braket_counter++;
-
-            } else if(input.charAt(i) == ')'){
-                if(i == input.length() - 1){
-                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
-                    array_counter++;
-                }
-                braket_counter--;
-
-            } else if(input.charAt(i) == ','){
-                if(key){
-                    tempIndex = i+1;
-                    key = false;
-                }else if(braket_counter == 1){
-                    array[array_counter] = stringToTerm(input.substring(tempIndex,i));
-                    array_counter++;
-                    tempIndex = i + 1;
-                }
-            }
-        }
-        Term[] result = new Term[arrity];
-
-        for (int i = 0; i < arrity; i++) {
-            result[i] = array[i];
-        }
-        return new Term(symbol, arrity, result);
-
     }
 
     public int nestSize(char[] sigma_d, char[] vars){
@@ -261,7 +98,6 @@ public class Term{
     }
 
     public String[] positions(boolean eps){
-        //changed true -> eps
         String[] res = new String[posNumber(eps)];
         int counter = 0;
         int arrity = getArrity();

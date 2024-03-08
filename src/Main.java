@@ -31,31 +31,75 @@ public class Main {
         if(temp_scanner.equals("b")){
             System.out.println("Which one?");
             temp_scanner = scanner.nextLine();
+            while(Integer.parseInt(temp_scanner) < 6 || Integer.parseInt(temp_scanner) > 10){
+                System.out.println("Example not found, try again! (6 - 10)");
+                temp_scanner = scanner.nextLine();
+            }
             switch (Integer.parseInt(temp_scanner)) {
                 case 6 -> {
-                    example = "h(X) -> f(w(g(a(X))),X)\nf(X,s(Y)) -> c(X,f(X,Y))\na(X) -> b(X)\ng(a(X)) -> q(X)\ng(b(X)) -> n(X)\nw(X) -> d\nq(s(X)) -> e(n(X),q(X))\nn(s(X)) -> n(X)\nvars\nX\nY";
+                    example = """
+                            (VAR X Y )
+                            (RULES
+                            h(X) -> f(w(g(a(X))),X)
+                            f(X,s(Y)) -> c(X,f(X,Y))
+                            a(X) -> b(X)
+                            g(a(X)) -> q(X)
+                            g(b(X)) -> n(X)
+                            w(X) -> d
+                            q(s(X)) -> e(n(X),q(X))
+                            n(s(X)) -> n(X)
+                            )""";
                     key_2 = true;
                 }
                 case 7 -> {
-                    example = "h(X) -> f(g(X),X)\nf(X,s(Y)) -> c(X,f(X,Y))\ng(s(X)) -> g(X)\nvars\nX\nY";
+                    example = """
+                            (VAR X Y )
+                            (RULES
+                            h(X) -> f(g(X),X)
+                            f(X,s(Y)) -> c(X,f(X,Y))
+                            g(s(X)) -> g(X)
+                            )
+                            """;
                     key_2 = true;
                 }
                 case 8 -> {
-                    example = "g -> f(a)\na -> b\nf(a) -> f(a)";
+                    example = """
+                            (VAR )
+                            (RULES
+                            g -> f(a)
+                            a -> b
+                            f(a) -> f(a)
+                            )
+                            """;
                     key_2 = true;
                 }
                 case 9 -> {
-                    example = "h(X) -> f(f(g(X),X),X)\nf(X,s(Y)) -> c(X,f(X,Y))\ng(s(X)) -> g(X)\nvars\nX\nY";
+                    example = """
+                            (VAR X )
+                            (RULES
+                            f(0) -> 1
+                            f(s(X)) -> g(f(X))
+                            g(X) -> p(X,X)
+                            f(s(X)) -> p(f(X), f(X))
+                            )""";
                     key_2 = true;
                 }
                 case 10 -> {
-                    example = "h(X) -> f(X,0,X)\nf(X,Y,s(Z)) -> f(X,w(g(X,Y)),Z)\nw(X) -> d(X,X)\ng(X,Y) -> n(X)\nn(s(X)) -> n(X)\nvars\nX\nY\nZ";
+                    example = """
+
+                            (VAR X Y Z )
+                            (RULES
+                            h(X) -> f(X,0,X)
+                            f(X,Y,s(Z)) -> f(X,w(g(X,Y)),Z)
+                            w(X) -> d(X,X)
+                            g(X,Y) -> n(X)
+                            n(s(X)) -> n(X)
+                            )""";
                     key_2 = true;
                 }
                 default -> {
-                    System.out.println("Example not found!");
-                    example = "";
-                    key_2 =true;
+                    System.out.println("RIP");
+                    return;
                 }
             }
         }
@@ -76,7 +120,7 @@ public class Main {
                     continue;
                 }
 
-                if(line.substring(0,4).equals("(VAR")){
+                if(line.startsWith("(VAR")){
                     int i = 5;
                     while(line.charAt(i) != ')'){
                         if(line.charAt(i) == ' '){
@@ -102,10 +146,10 @@ public class Main {
             e.printStackTrace();
         }
 
-        System.out.println("--- INTERPRETED INPUT ---");
+        System.out.println("--- PARSED INPUT ---");
         TRS trs_R = new TRS(rules, vars);
         trs_R.write(true, false, false, false);
-        System.out.println("");
+        System.out.println();
 
         Location[] infinity = trs_R.INF_R();
         System.out.println("--- REPEATED NESTING FOUND for SYMBOLS ---");
@@ -121,7 +165,7 @@ public class Main {
             System.out.println("None were found");
         }
 
-        System.out.println("");
+        System.out.println();
         System.out.println("--- ENCODING in WST FORMAT ---");
 
         TRS relative = trs_R.relativeTRS();
@@ -137,10 +181,10 @@ public class Main {
         System.out.println(")");
 
         trs_R1.write(false, false, true, false);
-        System.out.println("");
+        System.out.println();
         relative.write(false,true, false, true);
 
-        System.out.println("");
+        System.out.println();
 
 
     }
@@ -222,18 +266,6 @@ public class Main {
         }
         return new Term(symbol, arrity, result);
 
-    }
-
-    public static boolean isNotCorrect(String term){
-        int temp = 0;
-        for (int i = 0; i < term.length(); i++) {
-            if(term.charAt(i) == '('){
-                temp++;
-            }else if(term.charAt(i) == ')'){
-                temp--;
-            }
-        }
-        return temp != 0;
     }
 
 }
