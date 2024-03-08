@@ -16,7 +16,6 @@ public class Main {
         char[] vars = new char[10];
         int counter_ch = 0;
 
-        boolean key = false;
         boolean key_2 = false;
 
         Scanner scanner = new Scanner(System.in);
@@ -54,7 +53,7 @@ public class Main {
                     key_2 = true;
                 }
                 default -> {
-                    System.out.println("Example not found RIP");
+                    System.out.println("Example not found!");
                     example = "";
                     key_2 =true;
                 }
@@ -129,7 +128,7 @@ public class Main {
         TRS trs_R1 = trs_R.ENCODING();
         System.out.print("(VAR ");
         for (char ch :
-                getUnion(relative.vars, trs_R.getVars())) {
+                getUnion(relative.vars, trs_R.vars)) {
             if(ch == 0){
                 continue;
             }
@@ -157,6 +156,8 @@ public class Main {
         return set.toArray(new Character[0]);
     }
 
+    //USED TO PARSE INPUT
+    //DIFFERENT FROM THE ONE IN the TRS class
     public static Term stringToTerm(String input){
         Term[] array = new Term[input.length()];
         int array_counter = 0;
