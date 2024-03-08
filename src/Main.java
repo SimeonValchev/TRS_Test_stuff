@@ -2,9 +2,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
-public class trsProject {
+public class Main {
 
     public static void main(String[] args) throws IOException {
 
@@ -22,9 +24,12 @@ public class trsProject {
 
         System.out.println("Type a or b for:\na: Source file path OR\nb: Choose an example 6-10");
         String temp_scanner = scanner.nextLine();
-        if(temp_scanner.equals("a")){
+        while(!(temp_scanner.equals("a") || temp_scanner.equals("b"))){
+            System.out.println("Invalid input! (a/b)");
+            temp_scanner = scanner.nextLine();
+        }
 
-        }else {
+        if(temp_scanner.equals("b")){
             System.out.println("Which one?");
             temp_scanner = scanner.nextLine();
             switch (Integer.parseInt(temp_scanner)) {
@@ -59,6 +64,7 @@ public class trsProject {
         try {
 
             reader = key_2 ? new BufferedReader(new StringReader(example))
+                    //CURRENTLY READS DIRECTLY FROM PROJECT, NO NEED TO REPLACE
                     //SOURCE PATH OF FILE GOES HERE------------v
                     : new BufferedReader(new FileReader("src/sample.txt"));
 
@@ -66,19 +72,28 @@ public class trsProject {
 
             while (line != null) {
 
-                if(line.equals("vars")){
-                    key = true;
+                if(line.equals("(RULES") || line.equals(")")){
                     line = reader.readLine();
                     continue;
                 }
 
-                if(!key) {
-                    rules[counter_r] = new Rule(stringToTerm(line.substring(0, line.indexOf('-') - 1)), stringToTerm(line.substring(line.indexOf('>') + 2)));
-                    counter_r++;
-                }else{
-                    vars[counter_ch] = line.charAt(0);
-                    counter_ch++;
+                if(line.substring(0,4).equals("(VAR")){
+                    int i = 5;
+                    while(line.charAt(i) != ')'){
+                        if(line.charAt(i) == ' '){
+                            i++;
+                            continue;
+                        }
+                        vars[counter_ch] = line.charAt(i);
+                        counter_ch++;
+                        i++;
+                    }
+                    line = reader.readLine();
+                    continue;
                 }
+
+                rules[counter_r] = new Rule(stringToTerm(line.substring(0, line.indexOf('-') - 1)), stringToTerm(line.substring(line.indexOf('>') + 2)));
+                counter_r++;
 
                 line = reader.readLine();
             }
@@ -90,26 +105,56 @@ public class trsProject {
 
         System.out.println("--- INTERPRETED INPUT ---");
         TRS trs_R = new TRS(rules, vars);
-        trs_R.write();
-        System.out.println("");
+        trs_R.write(true, false, false, false);
         System.out.println("");
 
         Location[] infinity = trs_R.INF_R();
-        System.out.println("--- NON-TERMINATING RULES FOR SYMBOLS ---");
+        System.out.println("--- REPEATED NESTING FOUND for SYMBOLS ---");
+        boolean found_any = false;
         for (Location loc : infinity) {
             if(loc == null){
                 continue;
             }
-            System.out.println(loc.symbolAtLoc() + "  in rule " + loc.getAlpha().write() + "  on the " + (loc.left ? "LHS at position " : "RHS at position ") + loc.getPosition());
+            System.out.println(loc.symbolAtLoc() + "  in rule " + loc.getAlpha().write(false) + "  on the " + (loc.left ? "LHS at position " : "RHS at position ") + loc.getPosition());
+            found_any = true;
+        }
+        if(!found_any){
+            System.out.println("None were found");
         }
 
         System.out.println("");
-        System.out.println("--- ENCODING ---");
+        System.out.println("--- ENCODING in WST FORMAT ---");
+
+        TRS relative = trs_R.relativeTRS();
         TRS trs_R1 = trs_R.ENCODING();
-        trs_R1.write();
+        System.out.print("(VAR ");
+        for (char ch :
+                getUnion(relative.vars, trs_R.getVars())) {
+            if(ch == 0){
+                continue;
+            }
+            System.out.print(ch + " ");
+        }
+        System.out.println(")");
+
+        trs_R1.write(false, false, true, false);
+        System.out.println("");
+        relative.write(false,true, false, true);
+
         System.out.println("");
 
 
+    }
+
+    public static Character[] getUnion(char[] arr1, char[] arr2) {
+        Set<Character> set = new HashSet<>();
+        for (char c : arr1) {
+            set.add(c);
+        }
+        for (char c : arr2) {
+            set.add(c);
+        }
+        return set.toArray(new Character[0]);
     }
 
     public static Term stringToTerm(String input){

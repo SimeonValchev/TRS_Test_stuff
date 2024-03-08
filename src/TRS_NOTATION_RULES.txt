@@ -4,4 +4,4 @@
 4. Rules are explicitly of the form "l -> r" with the 'space' before and after the arrow.
 5. The rules input stops at the line "vars".
 6. Each new line afterwards is a separate variable.
-7. The path to the source file can be changed in the main method at trsProject
+7. The path to the source file can be changed in the main method at Main

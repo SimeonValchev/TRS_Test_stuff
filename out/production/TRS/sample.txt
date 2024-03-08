@@ -1,6 +1,8 @@
-f(0) -> 1
-f(s(X)) -> g(f(X))
-g(X) -> p(X,s(X))
-f(s(X)) -> p(f(X),s(f(X)))
-vars
-X
+(VAR X Y Z )
+(RULES
+h(X) -> f(X,0,X)
+f(X,Y,s(Z)) -> f(X,w(g(X,Y)),Z)
+w(X) -> d(X,X)
+g(X,Y) -> n(X)
+n(s(X)) -> n(X)
+)

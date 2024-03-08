@@ -14,7 +14,7 @@ public class Location {
     }
 
     public String write(){
-        return "(" + alpha.write() + ", " + (left ? "L" : "R") + ", " + position + ")" ;
+        return "(" + alpha.write(false) + ", " + (left ? "L" : "R") + ", " + position + ")" ;
     }
 
     public char symbolAtLoc(){

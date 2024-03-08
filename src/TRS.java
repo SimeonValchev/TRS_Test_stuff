@@ -19,8 +19,6 @@ public class TRS extends VarsCAP {
     public TRS ENCODING(){
         Location[] ENC = ENC_R();
         Nest[] NST = NST_R();
-        char[] infinite = INF_R_onlychars();
-        String[] signa = signature();
 
         for (Rule rule : this.getRules()) {
             if(rule == null){
@@ -650,6 +648,125 @@ public class TRS extends VarsCAP {
         return result;
     }
 
+    public TRS relativeTRS(){
+        //SOURCES
+        Location[] source_ENC = ENC_R();
+        char[] source_INF = INF_R_onlychars();
+        Location[] source_all = loc_R();
+
+        //RELATIVE TRS - RULES
+        Rule[] relativeRules = new Rule[100];
+        int rr_counter = 0;
+
+        //RELATIVE TRS - VARS
+        char[] variables = new char[20];
+        int var_counter = 0;
+
+        //NON-REPETITION OF SYMBOLS
+        char[] rememberer = new char[50];
+        int rem_counter = 0;
+
+        for (Location loc : source_ENC) {
+
+            if(inCharSet(loc.symbolAtLoc(), sigmaD()) && !inCharSet(loc.symbolAtLoc(), rememberer)){
+                int arrity = loc.left ? loc.alpha.left.subTermAt(loc.position).arrity : loc.alpha.right.subTermAt(loc.position).arrity;
+                rememberer[rem_counter] = loc.symbolAtLoc();
+                rem_counter++;
+
+                //EXECUTION
+                String tempL = "i(l_" + loc.symbolAtLoc();
+                if(arrity > 0){
+                    tempL += "(";
+                    for (int i = 0; i < arrity; i++) {
+                        char t = (vars[i] != 0 ? vars[i] : (char) (80 + i));
+                        if(!inCharSet(t, variables)){
+                            variables[var_counter] = t;
+                            var_counter++;
+                        }
+                        tempL += t + (i == arrity - 1 ? "" : ",");
+                    }
+                    tempL += ")";
+                }
+                tempL += ")";
+                String tempR = "i(" + tempL.substring(4);
+
+                relativeRules[rr_counter] = new Rule(stringToTerm(tempL, false), stringToTerm(tempR,false));
+                rr_counter++;
+
+                //PROPAGATION
+                if(arrity > 0) {
+                    String propaR = "";
+                    if (inCharSet(loc.symbolAtLoc(), source_INF)) {
+                        propaR = "i(l_" + loc.symbolAtLoc();
+                    } else {
+                        propaR = "l_" + loc.symbolAtLoc();
+                    }
+
+
+                    propaR += "(";
+                    for (int i = 0; i < arrity; i++) {
+                        char t = (vars[i] != 0 ? vars[i] : (char) (80 + i));
+                        if(!inCharSet(t, variables)){
+                            variables[var_counter] = t;
+                            var_counter++;
+                        }
+                        propaR += "i(" + t + ")" + (i == arrity - 1 ? "" : ",");
+                    }
+                    propaR += ")";
+                    if (inCharSet(loc.symbolAtLoc(), source_INF)) {
+                        propaR += ")";
+                    }
+
+                    relativeRules[rr_counter] = new Rule(stringToTerm(tempL, false), stringToTerm(propaR, false));
+                    rr_counter++;
+                }
+            }
+        }
+        for (Location loc : source_all) {
+            if(!inCharSet(loc.symbolAtLoc(), sigmaD()) && !inCharSet(loc.symbolAtLoc(), vars) && !inCharSet(loc.symbolAtLoc(), rememberer)){
+                //CONSTRUCTOR PROPAGATION
+                int arrity = loc.left ? loc.alpha.left.subTermAt(loc.position).arrity : loc.alpha.right.subTermAt(loc.position).arrity;
+
+                rememberer[rem_counter] = loc.symbolAtLoc();
+                rem_counter++;
+
+                String tempL = "i(" + loc.symbolAtLoc();
+                if(arrity > 0){
+                    tempL += "(";
+                    for (int i = 0; i < arrity; i++) {
+                        char t = (vars[i] != 0 ? vars[i] : (char) (80 + i));
+                        if(!inCharSet(t, variables)){
+                            variables[var_counter] = t;
+                            var_counter++;
+                        }
+                        tempL += t + (i == arrity - 1 ? "" : ",");
+                    }
+                    tempL += ")";
+                }else{
+                    continue;
+                }
+                tempL += ")";
+
+                String propaR = loc.symbolAtLoc() + "(";
+
+                for (int i = 0; i < arrity; i++) {
+                    char t = (vars[i] != 0 ? vars[i] : (char) (80 + i));
+                    if(!inCharSet(t, variables)){
+                        variables[var_counter] = t;
+                        var_counter++;
+                    }
+                    propaR += "i(" + t + ")" + (i == arrity - 1 ? "" : ",");
+                    }
+                propaR += ")";
+
+                relativeRules[rr_counter] = new Rule(stringToTerm(tempL, false), stringToTerm(propaR,false));
+                rr_counter++;
+            }
+        }
+
+        return new TRS(relativeRules,variables);
+    }
+
     //DEFINED SYMBOLS ON RHS
     public Location[] defRHS(){
         Location[] result = new Location[loc_R_num()];
@@ -706,15 +823,6 @@ public class TRS extends VarsCAP {
             }
         }
         return result;
-    }
-
-    //NESTING SIZE
-    public int nestSize(Location loc){
-       if(loc.left){
-           return loc.getAlpha().left.subTermAt(loc.position).nestSize(sigmaD(), vars);
-       }else{
-           return loc.getAlpha().right.subTermAt((loc.position)).nestSize(sigmaD(), vars);
-       }
     }
 
     //SUB-LOCATIONS
@@ -809,22 +917,33 @@ public class TRS extends VarsCAP {
     }
 
     //WRITER
-    public void write(){
+    public void write(boolean showVars, boolean relativeRules, boolean allowContinuation, boolean isContinuation){
+        if(showVars){
+            System.out.print("(VAR ");
+            for (int i = 0; i < vars.length; i++) {
+                if(vars[i] == 0){
+                    continue;
+                }
+                System.out.print(vars[i] + " ");
+            }
+            System.out.println(")");
+        }
+
+        if(!isContinuation){
+            System.out.println("(RULES");
+        }
+
         for (Rule r :
                 rules) {
             if(r == null){
                 continue;
             }
-            System.out.println(r.write());
+            System.out.println(r.write(relativeRules));
         }
-        System.out.print("VARS: ");
-        for (char ch :
-                vars) {
-            if(ch == 0){
-                continue;
-            }
-            System.out.print(ch + ", ");
+        if(!allowContinuation){
+            System.out.println(")");
         }
+
     }
 
     //ELEMENT IN SET CHECKERS
@@ -862,35 +981,6 @@ public class TRS extends VarsCAP {
                 continue;
             }
             res[i] = rules[i].getLeft().getSymbol();
-        }
-        return res;
-    }
-
-    public String[] signature(){
-        String[] res = new String[loc_R_num()];
-        int res_counter = 0;
-
-        Location[] source = loc_R();
-        for (Location loc: source) {
-            if(loc == null){
-                continue;
-            }
-            char temp = loc.symbolAtLoc();
-            String checker = temp + "_" + (loc.left ? loc.getAlpha().left.subTermAt(loc.position).arrity : loc.getAlpha().right.subTermAt(loc.position).arrity);
-            boolean key = true;
-            for (String str : res) {
-                if(str == null){
-                    continue;
-                }
-                if (checker.equals(str)) {
-                    key = false;
-                    break;
-                }
-            }
-            if (key){
-                res[res_counter] = checker;
-                res_counter++;
-            }
         }
         return res;
     }

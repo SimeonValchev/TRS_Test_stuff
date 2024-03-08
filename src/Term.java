@@ -143,7 +143,7 @@ public class Term{
             for (Term t : getSubterms()) {
                 res += t.write();
                 if(counter > 0){
-                    res += ", ";
+                    res += ",";
                     counter--;
                 }
             }
