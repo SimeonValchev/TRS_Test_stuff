@@ -75,18 +75,16 @@ public class Main {
                 }
                 case 9 -> {
                     example = """
-                            (VAR X )
+                            (VAR X Y )
                             (RULES
-                            f(0) -> 1
-                            f(s(X)) -> g(f(X))
-                            g(X) -> p(X,X)
-                            f(s(X)) -> p(f(X), f(X))
+                            h(X) -> f(f(g(X),X),X)
+                            f(X,s(Y)) -> c(X,f(X,Y))
+                            g(s(X)) -> g(X)
                             )""";
                     key_2 = true;
                 }
                 case 10 -> {
                     example = """
-
                             (VAR X Y Z )
                             (RULES
                             h(X) -> f(X,0,X)
@@ -107,12 +105,12 @@ public class Main {
         try {
 
             reader = key_2 ? new BufferedReader(new StringReader(example))
-                    //CURRENTLY READS DIRECTLY FROM PROJECT, NO NEED TO REPLACE
                     //SOURCE PATH OF FILE GOES HERE------------v
                     : new BufferedReader(new FileReader("src/sample.txt"));
 
             String line = reader.readLine();
 
+            //INTERPRETER
             while (line != null) {
 
                 if(line.equals("(RULES") || line.equals(")")){
@@ -151,6 +149,7 @@ public class Main {
         trs_R.write(true, false, false, false);
         System.out.println();
 
+        /*
         Location[] infinity = trs_R.INF_R();
         System.out.println("--- REPEATED NESTING FOUND for SYMBOLS ---");
         boolean found_any = false;
@@ -164,12 +163,13 @@ public class Main {
         if(!found_any){
             System.out.println("None were found");
         }
+         */
 
         System.out.println();
         System.out.println("--- ENCODING in WST FORMAT ---");
 
-        TRS relative = trs_R.relativeTRS();
-        TRS trs_R1 = trs_R.ENCODING();
+        TRS relative = trs_R.relativeTRS(false);
+        TRS trs_R1 = trs_R.ENCODING(false);
         System.out.print("(VAR ");
         for (char ch :
                 getUnion(relative.vars, trs_R.vars)) {

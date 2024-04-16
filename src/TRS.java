@@ -12,9 +12,13 @@ public class TRS extends VarsCAP {
         this.vars = vars;
     }
 
-    public TRS ENCODING() {
+    public TRS ENCODING(boolean enableExpanded) {
         Location[] ENC = ENC_R();
-        Nest[] NST = NST_R();
+        Nest[] NST = new Nest[1];
+
+        if(enableExpanded){
+            NST = NST_R_2();
+        }
 
         for (Rule rule : this.getRules()) {
             if (rule == null) {
@@ -140,7 +144,197 @@ public class TRS extends VarsCAP {
         return actual_result;
     }
 
-    //N S T
+    //SECOND VERSIONS of INF and NST
+    public Location[] INF_R_2(){
+        Location[] source = loc_R();
+        Location[] result = new Location[loc_R_num()];
+        int counter = 0;
+        boolean change_was_made = true;
+
+        while(change_was_made){
+            change_was_made = false;
+
+            for (Location loc : source) {
+                if(loc == null || inLocSet(loc,result)){
+                    continue;
+                }
+
+                for (Location subloc : subLocations(loc)) {
+                    //unsure of location equality
+                    if(subloc == null || subloc.equals(loc) || inLocSet(loc,result)){
+                        continue;
+                    }
+                    Location[] dataflow = theY(new Location[]{loc});
+                    if((!equalLocations(subloc,loc) && inLocSet(subloc,dataflow)) || inLocSet(subloc, result)){
+                        result[counter] = loc;
+                        counter++;
+                        change_was_made = true;
+                    }
+                }
+
+                for (Location mu : result) {
+                    if(inLocSet(loc, theY(new Location[]{mu})) && !inLocSet(loc,result)){
+                        result[counter] = loc;
+                        counter++;
+                        change_was_made = true;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    public boolean equalLocations(Location loc1, Location loc2){
+        if(loc1 == null || loc2 == null){
+            return false;
+        }
+        if(loc1.getAlpha().equals(loc2.getAlpha()) && loc1.getPosition().equals(loc2.getPosition()) && loc1.left == loc2.left){
+            return true;
+        }
+        return false;
+    }
+
+    public Nest[] NST_R_2(){
+        Location[] source = loc_R();
+        Location[] INFsource = INF_R_2();
+        Nest[] aleph = new Nest[loc_R_num()];
+        boolean change_was_made = true;
+        boolean change_was_made_aleph = true;
+
+        //INIT
+        for (int i = 0; i < source.length; i++) {
+            aleph[i] = new Nest(source[i],inCharSet(source[i].symbolAtLoc(),sigmaD()) ? 1 : 0);
+        }
+
+        //estimate for array size, may not be enough idk
+        Nest[] glattN = new Nest[6*loc_R_num()];
+        int glattN_counter = 0;
+
+        while(change_was_made_aleph) {
+            change_was_made_aleph = false;
+
+            //GLATT N RE-INIT
+            glattN_counter = 0;
+            for (Nest nest : glattN) {
+                if (nest != null){
+                    nest = null;
+                }
+            }
+
+            //GLATT-N BASE
+            for (Location loc : source) {
+                if (loc == null || inLocSet(loc, INFsource)) {
+                    continue;
+                }
+                int n = nest_depth(loc, aleph);
+                glattN[glattN_counter] = new Nest(loc, n);
+                glattN_counter++;
+            }
+
+            while (change_was_made) {
+                change_was_made = false;
+
+                //GLATT-N DATA-FLOWS
+                for (Nest nest : glattN) {
+                    if(nest == null){
+                        continue;
+                    }
+                    Location loc = nest.getLoc();
+                    int n = nest.getSize();
+
+                    for (Location flow_to : theY(new Location[]{loc})) {
+                        Nest tempNest = new Nest(flow_to, n);
+                        if (flow_to == null || inNestSet(tempNest, glattN)) {
+                            continue;
+                        }
+                        glattN[glattN_counter] = new Nest(flow_to, n);
+                        glattN_counter++;
+                        change_was_made = true;
+                    }
+                }
+            }
+
+            Location[] rememberer = new Location[glattN_counter];
+
+            //ONLY MAX-SIZE NEST
+            for (int i = 0; i < glattN_counter; i++) {
+                if (glattN[i] == null) {
+                    continue;
+                }
+                if (inLocSet(glattN[i].getLoc(), rememberer)) {
+                    continue;
+                }
+
+                int tempMax = glattN[i].getSize();
+                Location loc = glattN[i].getLoc();
+
+                for (Nest nest : glattN) {
+                    if(nest == null){
+                        continue;
+                    }
+                    if (nest.getLoc().equals(loc) && nest.getSize() > tempMax) {
+                        tempMax = nest.getSize();
+                    }
+                }
+                Nest tempNest = new Nest(loc, tempMax);
+                if(inNestSet(tempNest,aleph)){
+                    continue;
+                }
+
+                boolean keyToChange = false;
+                int aleph_counter = -1;
+                for (int j = 0; j < aleph.length; j++) {
+                    if(equalLocations(aleph[j].getLoc(),tempNest.getLoc()) && aleph[j].getSize() < tempMax){
+                        aleph_counter = j;
+                        keyToChange = true;
+                    }
+                }
+                if(keyToChange) {
+                    aleph[aleph_counter] = new Nest(glattN[i].getLoc(), tempMax);
+                    rememberer[aleph_counter] = glattN[i].getLoc();
+                    change_was_made_aleph = true;
+                }
+            }
+        }
+        return aleph;
+    }
+
+    public int nest_depth(Location lambda, Nest[] source){
+        int sublocNum = lambda.left ? lambda.getAlpha().left.subTermAt(lambda.position).posNumber(true) : lambda.getAlpha().right.subTermAt(lambda.position).posNumber(true);
+        int[] temp_values = new int[sublocNum];
+        int counter = 0;
+        int m = 0;
+        for (Nest nest : source) {
+            if(equalLocations(lambda,nest.getLoc())){
+                m = nest.getSize();
+            }
+        }
+
+        if(nonNullElements(subLocations(lambda)) == 1){
+            return m;
+        }else{
+            for (Location mu : subLocations(lambda)) {
+                if(mu == null){
+                    continue;
+                }
+                //!mu.equals(lambda)
+                if(!equalLocations(mu,lambda)) {
+                    temp_values[counter] = nest_depth(mu, source);
+                    counter++;
+                }
+            }
+            int temp_max = temp_values[0];
+            for (int i = 0; i < temp_values.length; i++) {
+                if(temp_max < temp_values[i]){
+                    temp_max = temp_values[i];
+                }
+            }
+
+            return !inCharSet(lambda.symbolAtLoc(),sigmaD()) ? 1 + temp_max : temp_max;
+        }
+    }
+
+    //N S T // not used
     public Nest[] NST_R() {
         Nest[] source = theALEPH();
         Nest[] result = new Nest[loc_R_num()];
@@ -208,7 +402,7 @@ public class TRS extends VarsCAP {
         return result;
     }
 
-    //I N F
+    //I N F // not used
     public Location[] INF_R() {
         Location[] source = loc_R();
         Location[] result = new Location[loc_R_num()];
@@ -230,6 +424,7 @@ public class TRS extends VarsCAP {
         return result;
     }
 
+            // not used
     public char[] INF_R_onlychars() {
         char[] res = new char[100];
         int res_counter = 0;
@@ -514,7 +709,7 @@ public class TRS extends VarsCAP {
     }
 
     //ONLY GENERATES THE RELATIVE TRS of THE ENCODING
-    public TRS relativeTRS() {
+    public TRS relativeTRS(boolean enableExpanded) {
         //SOURCES
         Location[] source_ENC = ENC_R();
         char[] source_INF = INF_R_onlychars();
@@ -563,7 +758,7 @@ public class TRS extends VarsCAP {
                 //PROPAGATION
                 if (arrity > 0) {
                     String propaR;
-                    if (inCharSet(loc.symbolAtLoc(), source_INF)) {
+                    if (inCharSet(loc.symbolAtLoc(), source_INF) || !enableExpanded) {
                         propaR = "i(l_" + loc.symbolAtLoc();
                     } else {
                         propaR = "l_" + loc.symbolAtLoc();
@@ -580,7 +775,7 @@ public class TRS extends VarsCAP {
                         propaR += "i(" + t + ")" + (i == arrity - 1 ? "" : ",");
                     }
                     propaR += ")";
-                    if (inCharSet(loc.symbolAtLoc(), source_INF)) {
+                    if (inCharSet(loc.symbolAtLoc(), source_INF) || !enableExpanded) {
                         propaR += ")";
                     }
 
@@ -836,6 +1031,28 @@ public class TRS extends VarsCAP {
             if (loc.alpha.equals(lambda.alpha) &&
                     loc.left == lambda.left &&
                     loc.position.equals(lambda.position)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean equalLoc(Location loc1, Location loc2) {
+            if (loc1.alpha.equals(loc2.alpha) &&
+                    loc1.left == loc2.left &&
+                    loc1.position.equals(loc2.position)) {
+                return true;
+            }
+        return false;
+    }
+
+    public boolean inNestSet(Nest nest, Nest[] source) {
+        for (Nest nesty : source) {
+            if (nesty == null) {
+                continue;
+            }
+            if (equalLocations(nest.getLoc(),nesty.getLoc()) &&
+                    nest.getSize() == nesty.getSize()) {
                 return true;
             }
         }
