@@ -1,0 +1,3 @@
+This is an encoder for a specific type of theoretical systems, so called Term Rewrite Systems (TRS), which also find practical uses in the analysis of time and space complexity of computer programms. 
+Some TRSs have more favourable properties for an automatic complexity analysis and what this encoder does is change some of the rules of the the TRS and add new ones so as to allow for a better automatic complexity analysis.
+The valid inputs for a TRS are described in TRS_NOTATION_RULES.txt, other inputs result in failiure. The input is read from the sample.txt file. There are also 5 preloaded examples that can be viewed, when running the programm.
